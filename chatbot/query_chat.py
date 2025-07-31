@@ -1,7 +1,7 @@
 import json
 import os
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
@@ -10,7 +10,7 @@ from langchain.prompts import PromptTemplate
 os.environ["GOOGLE_API_KEY"] = "AIzaSyC-AUp7NplKO6Y1RRtjwdSu6tRe2aqsknU"  # Thay bằng API key của bạn
 
 # Đường dẫn đến file JSON chứa dữ liệu đã tinh chỉnh
-JSON_DATA_PATH = "CuocThiAI/hou_crawler/crawler/data/menu_contents_refined.json"
+JSON_DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hou_crawler', 'crawler', 'data', 'menu_contents_refined.json'))
 
 # Hàm tải dữ liệu từ file JSON
 def load_json_data(json_path):
@@ -25,12 +25,20 @@ def load_json_data(json_path):
 # Tải FAISS vector store
 try:
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        # Đường dẫn tuyệt đối đến thư mục chứa index.faiss và index.pkl
+    # Đường dẫn tuyệt đối tới THƯ MỤC chứa index.faiss và index.pkl
+    INDEX_DIR = r"D:\airdrop\CuocThiAI\hou_crawler\crawler\data\hou_index"  # ✅ Đây là thư mục
+
+    print(f"👉 Đang tải FAISS từ: {INDEX_DIR}")
+
     vectordb = FAISS.load_local(
-        "CuocThiAI/hou_crawler/crawler/data/hou_index",
+        INDEX_DIR,  # ✅ Phải là thư mục, không phải file
         embeddings=embedding_model,
-        index_name="index",
+        index_name="index",  # Tương ứng với: index.faiss + index.pkl
         allow_dangerous_deserialization=True
     )
+
+
 except Exception as e:
     print(f"Lỗi khi tải FAISS vector store: {e}") 
     exit(1)

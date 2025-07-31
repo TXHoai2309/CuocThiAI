@@ -5,7 +5,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.schema import Document
 
 # 📥 Bước 1: Load dữ liệu JSON (lùi 1 cấp từ chatbot ra CuocThiAI)
-file_path = "menu_contents_refined.json"
+file_path = "D:/airdrop/CuocThiAI/CuocThiAI/hou_crawler/crawler/data/menu_contents_refined.json"
 
 
 print(f"📂 Đang mở file: {os.path.abspath(file_path)}")  # In đường dẫn tuyệt đối
