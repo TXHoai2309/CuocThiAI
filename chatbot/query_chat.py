@@ -15,7 +15,7 @@ os.environ["GOOGLE_API_KEY"] = "AIzaSyDR1eVkKtTN3RBeXNdW3bThRIwMMMfJND8"
 # === Load FAISS ===
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 vectordb = FAISS.load_local(
-    r"D:\airdrop\CuocThiAI\hou_crawler\crawler\data\hou_index",
+    r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\hou_index",
     embeddings=embedding_model,
     index_name="index",
     allow_dangerous_deserialization=True
@@ -23,7 +23,7 @@ vectordb = FAISS.load_local(
 
 # === Gemini model ===
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-1.5-flash",
     google_api_key=os.environ["GOOGLE_API_KEY"],
     temperature=0.5,
     max_output_tokens=2048
