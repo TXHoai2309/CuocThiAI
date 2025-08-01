@@ -7,7 +7,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 
 # Cài đặt API key của Google
-os.environ["GOOGLE_API_KEY"] = "AIzaSyC-AUp7NplKO6Y1RRtjwdSu6tRe2aqsknU"  # Thay bằng API key của bạn
+os.environ["GOOGLE_API_KEY"] = "AIzaSyCyfkZW1jADSJ58Q1VGUJP40tfmiVqIpf4"  # Thay bằng API key của bạn
 
 # Đường dẫn đến file JSON chứa dữ liệu đã tinh chỉnh
 JSON_DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hou_crawler', 'crawler', 'data', 'menu_contents_refined.json'))
@@ -27,7 +27,7 @@ try:
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         # Đường dẫn tuyệt đối đến thư mục chứa index.faiss và index.pkl
     # Đường dẫn tuyệt đối tới THƯ MỤC chứa index.faiss và index.pkl
-    INDEX_DIR = r"D:\airdrop\CuocThiAI\hou_crawler\crawler\data\hou_index"  # ✅ Đây là thư mục
+    INDEX_DIR = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\hou_index"  # ✅ Đây là thư mục
 
     print(f"👉 Đang tải FAISS từ: {INDEX_DIR}")
 
@@ -37,7 +37,7 @@ try:
         index_name="index",  # Tương ứng với: index.faiss + index.pkl
         allow_dangerous_deserialization=True
     )
-
+    
 
 except Exception as e:
     print(f"Lỗi khi tải FAISS vector store: {e}") 

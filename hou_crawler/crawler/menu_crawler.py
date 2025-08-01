@@ -3,31 +3,39 @@ from bs4 import BeautifulSoup
 import json
 import os
 
-
 def crawl_menu(url="https://hou.edu.vn", output_path="../data/menu_links.json"):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    res = requests.get(url, headers=headers)
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+    try:
+        res = requests.get(url, headers=headers, timeout=10)
+        res.raise_for_status()
+    except requests.RequestException as e:
+        print(f"❌ Lỗi khi kết nối: {e}")
+        return
+
     soup = BeautifulSoup(res.text, "html.parser")
 
+    # Tìm tất cả các thẻ <a> nằm trong <ul class="menu"> kể cả lồng nhau
     menu_ul = soup.find("ul", class_="menu")
     if not menu_ul:
         print("❌ Không tìm thấy thẻ <ul class='menu'>")
         return
 
-    menu_items = menu_ul.find_all("li", recursive=True)
+    a_tags = menu_ul.find_all("a", href=True)
 
     raw_links = []
-    for item in menu_items:
-        a_tag = item.find("a")
-        if not a_tag:
+    for a in a_tags:
+        href = a["href"].strip()
+        title = a.get_text(strip=True)
+        if not href or href.startswith("#") or "javascript:void" in href:
             continue
-        href = a_tag.get("href", "").strip()
-        title = a_tag.text.strip()
-        if href and href.startswith("http") and not href.startswith("#"):
-            raw_links.append({
-                "category": title,
-                "url": href
-            })
+        if not href.startswith("http"):
+            href = url.rstrip("/") + "/" + href.lstrip("/")
+        raw_links.append({
+            "category": title,
+            "url": href
+        })
 
     # Lọc trùng URL
     seen = set()
@@ -43,8 +51,7 @@ def crawl_menu(url="https://hou.edu.vn", output_path="../data/menu_links.json"):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(unique_links, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Đã lưu {len(unique_links)} menu link vào {output_path}")
-
+    print(f"✅ Đã lưu {len(unique_links)} đường link menu vào {output_path}")
 
 if __name__ == "__main__":
     crawl_menu()
