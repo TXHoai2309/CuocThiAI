@@ -67,7 +67,7 @@ def retrieve_docs(state: QAState) -> QAState:
     try:
         docs = vectordb.max_marginal_relevance_search(
             query=state["query"],
-            k=30,
+            k=100,
             fetch_k=100,
             lambda_mult=0.5,
             filter=lambda meta: state["section"] in meta.get("section", "")
@@ -79,7 +79,7 @@ def retrieve_docs(state: QAState) -> QAState:
     if not docs:
         docs = vectordb.max_marginal_relevance_search(
             query=state["query"],
-            k=30,
+            k=100,
             fetch_k=100,
             lambda_mult=0.5
         )
