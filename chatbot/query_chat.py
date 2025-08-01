@@ -6,6 +6,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
+from langgraph.graph import StateGraph
+import json
 
 # Cài đặt API key của Google
 os.environ["GOOGLE_API_KEY"] = "AIzaSyC-AUp7NplKO6Y1RRtjwdSu6tRe2aqsknU"  # Thay bằng API key của bạn
