@@ -25,17 +25,19 @@ def load_documents(json_path):
         category = (item.get("category") or "").lower()
 
         # Gán section theo logic đơn giản
-        if "tuyển sinh" in title or "tuyển sinh" in url:
+        if any(x in title for x in ["giới thiệu", "lịch sử", "sứ mệnh", "tầm nhìn", "triết lý"]):
+            section = "giới thiệu"
+        elif "tuyển sinh" in title or "tuyển sinh" in url:
             section = "tuyển sinh"
-        elif "ngành" in title or "ngành học" in category:
+        elif any(x in title or x in category for x in ["ngành", "chuyên ngành", "chương trình"]):
             section = "ngành học"
-        elif "sự kiện" in category:
+        elif "sự kiện" in category or "event" in url:
             section = "sự kiện"
-        elif "học phí" in category:
+        elif "học phí" in category or "học phí" in title:
             section = "học phí"
-        elif "hợp tác" in category:
+        elif "hợp tác" in category or "hợp tác" in title:
             section = "hợp tác"
-        elif "thông báo" in category:
+        elif "thông báo" in category or "thông báo" in title:
             section = "thông báo"
         else:
             section = "khác"
@@ -57,12 +59,16 @@ def main():
     print("📥 Đang tải và xử lý dữ liệu JSON...")
     documents = load_documents(INPUT_FILE)
 
-    print("🔪 Chia nhỏ tài liệu bằng RecursiveCharacterTextSplitter...")
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    print("🔪 Chia nhỏ tài liệu...")
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=200,
+        separators=["\n\n", "\n", ".", " ", ""]
+    )
     split_docs = splitter.split_documents(documents)
 
     print(f"📄 Tổng số đoạn sau chia: {len(split_docs)}")
-
+    
     print("🧠 Đang nhúng dữ liệu với HuggingFaceEmbeddings...")
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vectordb = FAISS.from_documents(split_docs, embedding_model)
