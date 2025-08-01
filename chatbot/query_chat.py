@@ -1,3 +1,4 @@
+# chatbot/query_chat.py
 import os
 from typing import TypedDict, List
 from click import prompt
@@ -10,7 +11,7 @@ from langgraph.graph import StateGraph, START
 from langchain.chains import LLMChain
 
 # === API Key ===
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDR1eVkKtTN3RBeXNdW3bThRIwMMMfJND8"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyD8y6thKXlYDkBh8r6K2yk3IVeK2IAsuio"
 
 # === Load FAISS ===
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -136,15 +137,16 @@ graph.add_edge("classify", "retrieve")
 graph.add_edge("retrieve", "answer")
 graph.set_finish_point("answer")
 
+# ... các phần trên giữ nguyên ...
+
 chatbot = graph.compile()
 
-# === Vòng lặp CLI ===
-while True:
-    query = input("❓ Hỏi: ").strip()
-    if query.lower() in ["exit", "quit", "q"]:
-        print("👋 Tạm biệt!")
-        break
-
-    result = chatbot.invoke({"query": query})
-    print("\n📌 Trả lời:", result["answer"])
-
+# === Vòng lặp CLI chỉ chạy khi chạy trực tiếp file này ===
+if __name__ == "__main__":
+    while True:
+        query = input("❓ Hỏi: ").strip()
+        if query.lower() in ["exit", "quit", "q"]:
+            print("👋 Tạm biệt!")
+            break
+        result = chatbot.invoke({"query": query})
+        print("\n📌 Trả lời:", result["answer"])

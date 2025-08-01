@@ -1,0 +1,149 @@
+<!-- chat.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot HOU AI</title>
+  <meta name="theme-color" content="#2563eb" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* chấm nhấp nháy cho loading */
+    .dotting::after {
+      content: " ";
+      animation: dot 1.2s infinite steps(4,end);
+    }
+    @keyframes dot {
+      0% { content: ""; }
+      25% { content: "."; }
+      50% { content: ".."; }
+      75% { content: "..."; }
+      100% { content: ""; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-blue-600 text-white">
+    <div class="mx-auto max-w-3xl px-4 py-4 flex items-center gap-3">
+      <div class="text-2xl">🎓</div>
+      <h1 class="text-xl sm:text-2xl font-semibold">Chatbot HOU AI</h1>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1">
+    <div class="mx-auto max-w-3xl px-4 py-4 h-[calc(100vh-160px)] sm:h-[calc(100vh-180px)] flex flex-col">
+      <!-- Khung chat -->
+      <div id="chat-area" class="flex-1 bg-white shadow-sm rounded-xl p-4 overflow-y-auto space-y-3">
+        <!-- Tin nhắn sẽ được thêm bằng JS -->
+      </div>
+
+      <!-- Ô nhập -->
+      <div class="mt-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+          <div class="flex gap-2 items-end">
+            <textarea id="user-input" rows="2" placeholder="Nhập câu hỏi của bạn..."
+              class="flex-1 resize-none outline-none px-3 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            ></textarea>
+            <button id="send-btn"
+              class="shrink-0 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed">
+              Gửi
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 px-1 pt-1">Nhấn <b>Enter</b> để gửi, <b>Shift+Enter</b> để xuống dòng.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const chatArea = document.getElementById('chat-area');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Auto focus
+    userInput.focus();
+
+    // Gửi bằng nút
+    sendBtn.addEventListener('click', sendMessage);
+
+    // Enter để gửi, Shift+Enter xuống dòng
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function scrollToBottom() {
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function bubble(content, side = 'bot') {
+      const wrap = document.createElement('div');
+      wrap.className = `flex ${side === 'user' ? 'justify-end' : 'justify-start'} w-full`;
+
+      const inner = document.createElement('div');
+      inner.className = `
+        max-w-[85%] sm:max-w-[70%] px-3 py-2 rounded-2xl text-sm leading-relaxed
+        ${side === 'user'
+          ? 'bg-blue-600 text-white rounded-br-md'
+          : 'bg-gray-100 text-gray-800 border border-gray-200 rounded-bl-md'}
+      `;
+      inner.textContent = content;
+
+      wrap.appendChild(inner);
+      chatArea.appendChild(wrap);
+      scrollToBottom();
+      return inner; // trả về để có thể sửa nội dung (dùng cho loading -> kết quả)
+    }
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      // Hiện tin nhắn người dùng
+      bubble(message, 'user');
+
+      // Reset input & khóa nút gửi
+      userInput.value = '';
+      userInput.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      // Thêm bong bóng "đang trả lời..."
+      const loadingBubble = bubble('Đang trả lời', 'bot');
+      loadingBubble.classList.add('dotting');
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: message })
+        });
+
+        let payload;
+        try { payload = await res.json(); } catch { payload = {}; }
+
+        const answer =
+          (payload && payload.answer) ||
+          (res.ok ? 'Không có phản hồi.' : `Lỗi ${res.status}: ${res.statusText}`);
+
+        // Cập nhật bong bóng loading thành nội dung trả lời
+        loadingBubble.classList.remove('dotting');
+        loadingBubble.textContent = answer;
+        scrollToBottom();
+
+      } catch (err) {
+        loadingBubble.classList.remove('dotting');
+        loadingBubble.textContent = 'Có lỗi xảy ra khi truy vấn. Vui lòng thử lại sau.';
+        console.error(err);
+      } finally {
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    }
+  </script>
+</body>
+</html>
