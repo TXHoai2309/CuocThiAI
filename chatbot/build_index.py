@@ -6,7 +6,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 
 # Đường dẫn file JSON đầu vào
-INPUT_FILE =  r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\hou_index"
+INPUT_FILE =  r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\menu_contents_refined.json"
 OUTPUT_INDEX_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'hou_crawler', 'crawler', 'data', 'hou_index'))
 
 # Tải và chuyển đổi dữ liệu thành list Document
