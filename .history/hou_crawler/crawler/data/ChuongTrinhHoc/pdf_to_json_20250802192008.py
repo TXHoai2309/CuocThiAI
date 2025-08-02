@@ -258,18 +258,20 @@ def find_and_replace_file_data(data_list: list, new_data: Dict):
     Nếu không tìm thấy, thêm mới vào cuối.
     """
     file_name = new_data["metadata"]["source_file"]
+    found = False
     for i, file_data in enumerate(data_list):
         if file_data.get("metadata", {}).get("source_file") == file_name:
             data_list[i] = new_data
-            return True
-    data_list.append(new_data)
-    return False
+            found = True
+            break
+    if not found:
+        data_list.append(new_data)
 
 # ====================== CLI ======================
 def main():
     # === ĐỔI 2 ĐƯỜNG DẪN NÀY THEO MÁY BẠN NẾU CHẠY BẰNG TAY ===
-    DEFAULT_PDF = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\TCNH.pdf"
-    DEFAULT_OUT = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\Chuongtrinhhoc.json"
+    DEFAULT_PDF = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\DTVT.pdf"
+    DEFAULT_OUT = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\Chuongtrinhhocc.json"
 
     ap = argparse.ArgumentParser(
         description="PDF → JSON có cấu trúc (sections/paragraph/table) với OCR dự phòng (Tesseract)."
