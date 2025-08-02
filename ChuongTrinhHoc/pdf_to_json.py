@@ -11,7 +11,7 @@ import pdfplumber
 import pytesseract
 from PIL import Image
 
-# ====================== NHẬN DỊN SECTION ======================
+# ====================== NHẬN DẠNG SECTION ======================
 SECTION_PATTERNS = [
     r"^(A|B|C)\.\s+",
     r"^(I|II|III|IV|V|VI|VII|VIII|IX|X)\.\s+",
@@ -248,14 +248,27 @@ def load_json(out_path: str) -> Optional[Dict]:
             with open(out_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError:
-            print(f"⚠️ Cảnh báo: File JSON {out_path} bị lỗi, sẽ ghi đè file mới.")
+            print(f"⚠️ Cảnh báo: File JSON {out_path} bị lỗi, sẽ tạo file mới.")
             return None
     return None
 
+def find_and_replace_file_data(data_list: list, new_data: Dict):
+    """
+    Tìm kiếm và thay thế dữ liệu của một file trong danh sách.
+    Nếu không tìm thấy, thêm mới vào cuối.
+    """
+    file_name = new_data["metadata"]["source_file"]
+    for i, file_data in enumerate(data_list):
+        if file_data.get("metadata", {}).get("source_file") == file_name:
+            data_list[i] = new_data
+            return True
+    data_list.append(new_data)
+    return False
+
 # ====================== CLI ======================
 def main():
-    # === ĐỔI 2 ĐƯỜNG DẪN NÀY THEO MÁY BẠN ===
-    DEFAULT_PDF = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\KienTruc.pdf"
+    # === ĐỔI 2 ĐƯỜNG DẪN NÀY THEO MÁY BẠN NẾU CHẠY BẰNG TAY ===
+    DEFAULT_PDF = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\TCNH.pdf"
     DEFAULT_OUT = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\Chuongtrinhhoc.json"
 
     ap = argparse.ArgumentParser(
@@ -284,30 +297,34 @@ def main():
     pdf_paths = [os.path.normpath(p) for p in pdf_paths]
     out_path = os.path.normpath(out_path)
 
+    valid_pdf_paths = []
     for pdf_path in pdf_paths:
         if not os.path.exists(pdf_path):
             print(f"❌ Không tìm thấy file PDF: {pdf_path}. Bỏ qua.")
-            pdf_paths.remove(pdf_path)
-    
-    if not pdf_paths:
+        else:
+            valid_pdf_paths.append(pdf_path)
+
+    if not valid_pdf_paths:
         print("❌ Không có file PDF hợp lệ nào để xử lý.")
         return
 
-    # 3) Đọc file JSON hiện có nếu có
-    combined_data = load_json(out_path) or {
-        "metadata": {
-            "generator": "pdfplumber+Tesseract",
-            "schema_version": "v2.0"
-        },
-        "sections": []
-    }
+    # 3) Đọc file JSON hiện có nếu có, nếu không thì khởi tạo mới.
+    combined_data = load_json(out_path)
+    if combined_data is None:
+        combined_data = {
+            "metadata": {
+                "generator": "pdfplumber+Tesseract",
+                "schema_version": "v2.0"
+            },
+            "files": []
+        }
 
     # 4) Chạy trích xuất và gom dữ liệu
     print(f"[INFO] OUT: {out_path}")
     print(f"[INFO] OCR lang: {args.lang} | use_ocr={not args.no_ocr}")
 
     try:
-        for pdf_path in pdf_paths:
+        for pdf_path in valid_pdf_paths:
             print(f"[INFO] Đang xử lý PDF: {pdf_path}")
             data = pdf_to_structured(
                 pdf_path,
@@ -317,11 +334,11 @@ def main():
                 tesseract_cmd=args.tesseract,
                 dump_dir=args.dump_ocr,
             )
-            # Thêm các section mới vào dữ liệu chung
-            combined_data["sections"].extend(data["sections"])
-            print(f"✅ Đã trích xuất dữ liệu từ: {os.path.basename(pdf_path)}")
+            # Tìm và thay thế hoặc thêm mới dữ liệu của file hiện tại
+            find_and_replace_file_data(combined_data["files"], data)
+            print(f"✅ Đã trích xuất và cập nhật dữ liệu từ: {os.path.basename(pdf_path)}")
 
-        # 5) Ghi toàn bộ dữ liệu ra file JSON
+        # 5) Ghi toàn bộ dữ liệu đã được cập nhật ra file JSON
         save_json(combined_data, out_path)
         print(f"✅ Đã lưu toàn bộ JSON có cấu trúc vào: {out_path}")
         
