@@ -244,7 +244,7 @@ graph.add_node("answer", generate_answer)
 graph.set_entry_point("add_user_message")
 graph.add_edge("add_user_message", "classify")
 graph.add_edge("classify", "retrieve")
-graph.add_edge("retrieve", "answer")``
+graph.add_edge("retrieve", "answer")
 graph.set_finish_point("answer")
 
 # BẬT BỘ NHỚ: mỗi thread_id sẽ có lịch sử messages riêng
