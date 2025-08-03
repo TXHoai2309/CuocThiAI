@@ -19,7 +19,7 @@ def chat():
 
     config = {"configurable": {"thread_id": thread_id} or "default"}
     # Gọi graph với messages để bộ nhớ được nối tự động
-    result = chatbot.invoke({"messages": [HumanMessage(content=query)]}, config=config)
+    result = chatbot.invoke({"query": query}, config=config)
     return jsonify({"answer": result.get("answer", "")})
 
 if __name__ == '__main__':
