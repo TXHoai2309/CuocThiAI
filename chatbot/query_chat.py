@@ -14,7 +14,7 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 
 # === API Key ===
-os.environ.setdefault("GOOGLE_API_KEY", "AIzaSyDR1eVkKtTN3RBeXNdW3bThRIwMMMfJND8")
+os.environ.setdefault("GOOGLE_API_KEY", "AIzaSyBiVUeOqe12cgPIaphtiudVMEWyS9_mieo")
 
 # === Load FAISS ===
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
