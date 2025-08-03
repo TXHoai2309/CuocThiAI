@@ -1,295 +1,584 @@
 <!DOCTYPE html>
 <html lang="vi" class="h-full">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HOU AI Chat</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',
-              500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81'
-            }
-          }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HOU AI Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#eef2ff",
+                100: "#e0e7ff",
+                200: "#c7d2fe",
+                300: "#a5b4fc",
+                400: "#818cf8",
+                500: "#6366f1",
+                600: "#4f46e5",
+                700: "#4338ca",
+                800: "#3730a3",
+                900: "#312e81",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* thanh cuộn nhẹ nhàng */
+      .nice-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+      .nice-scroll::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      .nice-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .nice-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 8px;
+      }
+      .typing span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin: 0 2px;
+        border-radius: 9999px;
+        background: #9ca3af;
+        animation: blink 1s infinite alternate;
+      }
+      .typing span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .typing span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes blink {
+        from {
+          opacity: 0.2;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(-2px);
         }
       }
-    }
-  </script>
-  <style>
-    /* thanh cuộn nhẹ nhàng */
-    .nice-scroll{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
-    .nice-scroll::-webkit-scrollbar{height:8px;width:8px}
-    .nice-scroll::-webkit-scrollbar-track{background:transparent}
-    .nice-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
-    .typing span{display:inline-block; width:6px; height:6px; margin:0 2px; border-radius:9999px; background:#9ca3af; animation:blink 1s infinite alternate}
-    .typing span:nth-child(2){animation-delay:.15s}
-    .typing span:nth-child(3){animation-delay:.3s}
-    @keyframes blink{from{opacity:.2; transform:translateY(0)} to{opacity:1; transform:translateY(-2px)}}
-  </style>
-</head>
-<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-  <!-- App Shell -->
-  <div class="h-full grid lg:grid-cols-[300px_1fr]">
-    <!-- Sidebar -->
-    <aside class="hidden lg:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 backdrop-blur">
-      <div class="p-4 flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Phiên trò chuyện</h2>
-        <button id="newChatBtn" class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm">Mới</button>
-      </div>
-      <div id="sessionList" class="flex-1 overflow-y-auto nice-scroll p-2 space-y-1"></div>
-      <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
-        <button id="exportBtn" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">Xuất JSON</button>
-        <button id="clearAllBtn" class="text-sm px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50">Xóa tất cả</button>
-      </div>
-    </aside>
 
-    <!-- Main -->
-    <section class="relative flex flex-col h-screen">
+      /* ===== Markdown prose cho bubble bot ===== */
+      .md-content {
+        line-height: 1.75;
+      }
+      .md-content h1 {
+        font-weight: 700;
+        font-size: 1.125rem;
+        margin: 0.25rem 0;
+      }
+      .md-content h2 {
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin: 0.25rem 0;
+      }
+      .md-content h3 {
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0.25rem 0;
+      }
+      .md-content p {
+        margin: 0.5rem 0;
+      }
+      .md-content ul {
+        list-style: disc;
+        padding-left: 1.25rem;
+        margin: 0.25rem 0;
+      }
+      .md-content ol {
+        list-style: decimal;
+        padding-left: 1.25rem;
+        margin: 0.25rem 0;
+      }
+      .md-content li {
+        margin: 0.2rem 0;
+      }
+      .md-content a {
+        color: #2563eb;
+        text-decoration: underline;
+        word-break: break-word;
+      }
+      .md-content code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: rgba(148, 163, 184, 0.15);
+        padding: 0.1rem 0.3rem;
+        border-radius: 0.25rem;
+      }
+      .md-content pre {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        overflow: auto;
+      }
+      .md-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+      .md-content th,
+      .md-content td {
+        border: 1px solid #e5e7eb;
+        padding: 0.4rem;
+        text-align: left;
+      }
+      .dark .md-content th,
+      .dark .md-content td {
+        border-color: #334155;
+      }
+    </style>
 
-      <!-- Topbar -->
-       <header class="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/70 backdrop-blur border-b border-slate-200 dark:border-slate-800">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="text-2xl">🎓</div>
-            <div>
-              <h1 class="text-base sm:text-lg font-semibold">HOU AI Chat</h1>
-              <p id="statusText" class="text-xs text-slate-500">Sẵn sàng</p>
+    <!-- ===== Markdown render an toàn + highlight code ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+  </head>
+  <body
+    class="h-full bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+  >
+    <!-- App Shell -->
+    <div class="h-full grid lg:grid-cols-[300px_1fr]">
+      <!-- Sidebar -->
+      <aside
+        class="hidden lg:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 backdrop-blur"
+      >
+        <div class="p-4 flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Phiên trò chuyện</h2>
+          <button
+            id="newChatBtn"
+            class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm"
+          >
+            Mới
+          </button>
+        </div>
+        <div
+          id="sessionList"
+          class="flex-1 overflow-y-auto nice-scroll p-2 space-y-1"
+        ></div>
+        <div
+          class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2"
+        >
+          <button
+            id="exportBtn"
+            class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            Xuất JSON
+          </button>
+          <button
+            id="clearAllBtn"
+            class="text-sm px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50"
+          >
+            Xóa tất cả
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <section class="relative flex flex-col h-screen">
+        <!-- Topbar -->
+        <header
+          class="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/70 backdrop-blur border-b border-slate-200 dark:border-slate-800"
+        >
+          <div
+            class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3"
+          >
+            <div class="flex items-center gap-3">
+              <div class="text-2xl">🎓</div>
+              <div>
+                <h1 class="text-base sm:text-lg font-semibold">HOU AI Chat</h1>
+                <p id="statusText" class="text-xs text-slate-500">Sẵn sàng</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                id="themeBtn"
+                class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm"
+              >
+                🌙/☀️
+              </button>
+              <button
+                id="newChatBtnTop"
+                class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm"
+              >
+                Chat mới
+              </button>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button id="themeBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-sm">🌙/☀️</button>
-            <button id="newChatBtnTop" class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm">Chat mới</button>
+        </header>
+
+        <!-- Chat area: phần này cuộn -->
+        <div
+          id="chatArea"
+          class="flex-1 min-h-0 max-w-5xl mx-auto w-full px-4 py-4 overflow-y-auto nice-scroll space-y-4"
+        >
+          <!-- tin nhắn -->
+        </div>
+
+        <!-- Composer: cố định dưới cùng -->
+        <div
+          class="sticky bottom-0 z-20 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 backdrop-blur"
+        >
+          <div class="max-w-5xl mx-auto px-4 py-3">
+            <div
+              class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2"
+            >
+              <div class="flex items-end gap-2">
+                <textarea
+                  id="inputBox"
+                  rows="1"
+                  placeholder="Nhập câu hỏi... (Enter để gửi, Shift+Enter xuống dòng)"
+                  class="flex-1 resize-none outline-none bg-transparent px-3 py-2 rounded-xl"
+                ></textarea>
+                <button
+                  id="sendBtn"
+                  class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium disabled:opacity-60"
+                >
+                  Gửi
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-1 px-1">
+                <div class="text-xs text-slate-500">
+                  Mẹo: đặt câu hỏi cụ thể để có câu trả lời tốt hơn.
+                </div>
+                <div id="latency" class="text-xs text-slate-500"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </header>
-
-      <!-- Chat area: phần này cuộn -->
-<div id="chatArea"
-     class="flex-1 min-h-0 max-w-5xl mx-auto w-full px-4 py-4 overflow-y-auto nice-scroll space-y-4">
-  <!-- tin nhắn -->
-</div>
-
-<!-- Composer: cố định dưới cùng -->
-<div class="sticky bottom-0 z-20 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 backdrop-blur">
-  <div class="max-w-5xl mx-auto px-4 py-3">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2">
-      <div class="flex items-end gap-2">
-        <textarea id="inputBox" rows="1"
-          placeholder="Nhập câu hỏi... (Enter để gửi, Shift+Enter xuống dòng)"
-          class="flex-1 resize-none outline-none bg-transparent px-3 py-2 rounded-xl"></textarea>
-        <button id="sendBtn"
-          class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium disabled:opacity-60">
-          Gửi
-        </button>
-      </div>
-      <div class="flex items-center justify-between pt-1 px-1">
-        <div class="text-xs text-slate-500">Mẹo: đặt câu hỏi cụ thể để có câu trả lời tốt hơn.</div>
-        <div id="latency" class="text-xs text-slate-500"></div>
-      </div>
+      </section>
     </div>
-  </div>
-</div>
 
-      </div>
+    <!-- Toast -->
+    <div
+      id="toast"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg"
+    >
+      Đã sao chép
+    </div>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg">Đã sao chép</div>
+    <script>
+      // ===== State & Storage =====
+      const chatArea = document.getElementById("chatArea");
+      const inputBox = document.getElementById("inputBox");
+      const sendBtn = document.getElementById("sendBtn");
+      const statusText = document.getElementById("statusText");
+      const latencyEl = document.getElementById("latency");
+      const toast = document.getElementById("toast");
+      const sessionList = document.getElementById("sessionList");
+      const newChatBtn = document.getElementById("newChatBtn");
+      const newChatBtnTop = document.getElementById("newChatBtnTop");
+      const clearAllBtn = document.getElementById("clearAllBtn");
+      const exportBtn = document.getElementById("exportBtn");
+      const themeBtn = document.getElementById("themeBtn");
 
-  <script>
-    // ===== State & Storage =====
-    const chatArea = document.getElementById('chatArea');
-    const inputBox = document.getElementById('inputBox');
-    const sendBtn = document.getElementById('sendBtn');
-    const statusText = document.getElementById('statusText');
-    const latencyEl = document.getElementById('latency');
-    const toast = document.getElementById('toast');
-    const sessionList = document.getElementById('sessionList');
-    const newChatBtn = document.getElementById('newChatBtn');
-    const newChatBtnTop = document.getElementById('newChatBtnTop');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const exportBtn = document.getElementById('exportBtn');
-    const themeBtn = document.getElementById('themeBtn');
+      let sessions = JSON.parse(localStorage.getItem("hou_sessions") || "[]");
+      let currentId = localStorage.getItem("hou_current");
 
-    let sessions = JSON.parse(localStorage.getItem('hou_sessions')||'[]');
-    let currentId = localStorage.getItem('hou_current');
-
-    function uid(){ return Math.random().toString(36).slice(2,10); }
-
-    function ensureSession(){
-      if (!currentId || !sessions.find(s=>s.id===currentId)){
-        const s = {id: uid(), title:'Cuộc trò chuyện mới', messages:[]};
-        sessions.unshift(s); currentId = s.id; persist();
+      function uid() {
+        return Math.random().toString(36).slice(2, 10);
       }
-    }
 
-    function persist(){
-      localStorage.setItem('hou_sessions', JSON.stringify(sessions));
-      localStorage.setItem('hou_current', currentId);
-      renderSessions();
-    }
+      function ensureSession() {
+        if (!currentId || !sessions.find((s) => s.id === currentId)) {
+          const s = { id: uid(), title: "Cuộc trò chuyện mới", messages: [] };
+          sessions.unshift(s);
+          currentId = s.id;
+          persist();
+        }
+      }
 
-    function renderSessions(){
-      sessionList.innerHTML = '';
-      sessions.forEach(s => {
-        const item = document.createElement('div');
-        item.className = `group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${s.id===currentId?'bg-slate-100 dark:bg-slate-800':''}`;
-        const title = document.createElement('div');
-        title.className = 'truncate text-sm';
-        title.textContent = s.title || 'Cuộc trò chuyện';
-        const tools = document.createElement('div');
-        tools.className = 'flex items-center gap-1';
-        const renameBtn = btn('✏️',()=>{
-          const name = prompt('Đổi tên phiên', s.title);
-          if (name!==null){ s.title = name || 'Không tên'; persist(); }
+      function persist() {
+        localStorage.setItem("hou_sessions", JSON.stringify(sessions));
+        localStorage.setItem("hou_current", currentId);
+        renderSessions();
+      }
+
+      function renderSessions() {
+        sessionList.innerHTML = "";
+        sessions.forEach((s) => {
+          const item = document.createElement("div");
+          item.className = `group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${
+            s.id === currentId ? "bg-slate-100 dark:bg-slate-800" : ""
+          }`;
+          const title = document.createElement("div");
+          title.className = "truncate text-sm";
+          title.textContent = s.title || "Cuộc trò chuyện";
+          const tools = document.createElement("div");
+          tools.className = "flex items-center gap-1";
+          const renameBtn = btn("✏️", () => {
+            const name = prompt("Đổi tên phiên", s.title);
+            if (name !== null) {
+              s.title = name || "Không tên";
+              persist();
+            }
+          });
+          const delBtn = btn("🗑️", () => {
+            if (confirm("Xóa phiên này?")) {
+              sessions = sessions.filter((x) => x.id !== s.id);
+              if (currentId === s.id) currentId = sessions[0]?.id;
+              persist();
+              loadCurrent();
+            }
+          });
+          tools.append(renameBtn, delBtn);
+          item.append(title, tools);
+          item.addEventListener("click", () => {
+            currentId = s.id;
+            persist();
+            loadCurrent();
+          });
+          sessionList.appendChild(item);
         });
-        const delBtn = btn('🗑️',()=>{
-          if(confirm('Xóa phiên này?')){
-            sessions = sessions.filter(x=>x.id!==s.id);
-            if (currentId===s.id) currentId = sessions[0]?.id;
-            persist(); loadCurrent();
-          }
+      }
+
+      function btn(label, onClick) {
+        const b = document.createElement("button");
+        b.className =
+          "text-xs px-2 py-1 rounded-md border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700";
+        b.textContent = label;
+        b.onclick = (e) => {
+          e.stopPropagation();
+          onClick();
+        };
+        return b;
+      }
+
+      // ===== Cấu hình Markdown + highlight =====
+      if (window.marked) {
+        marked.setOptions({
+          gfm: true,
+          breaks: true,
+          mangle: false,
+          headerIds: false,
+          highlight: (code, lang) => {
+            if (window.hljs) {
+              try {
+                return lang
+                  ? hljs.highlight(code, { language: lang }).value
+                  : hljs.highlightAuto(code).value;
+              } catch {}
+            }
+            return code;
+          },
         });
-        tools.append(renameBtn, delBtn);
-        item.append(title, tools);
-        item.addEventListener('click',()=>{ currentId=s.id; persist(); loadCurrent();});
-        sessionList.appendChild(item);
+      }
+
+      function renderMessage(m) {
+        const wrap = document.createElement("div");
+        wrap.className = `flex ${
+          m.role === "user" ? "justify-end" : "justify-start"
+        }`;
+
+        const bubble = document.createElement("div");
+        bubble.className = `max-w-[85%] md:max-w-[70%] px-3 py-2 rounded-2xl text-sm leading-relaxed shadow-sm ${
+          m.role === "user"
+            ? "bg-brand-600 text-white rounded-br-md"
+            : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-md"
+        }`;
+
+        // Render Markdown an toàn (chỉ bot; nếu muốn cả user thì bỏ điều kiện role)
+        const text = document.createElement("div");
+        text.className = "md-content";
+        let html = m.content || "";
+        if (m.role === "assistant" && window.marked && window.DOMPurify) {
+          try {
+            html = DOMPurify.sanitize(marked.parse(html));
+          } catch {}
+        } else {
+          html = (html || "").replace(/\n/g, "<br/>"); // fallback đơn giản
+        }
+        text.innerHTML = html;
+        // Link an toàn, mở tab mới
+        text.querySelectorAll("a[href]").forEach((a) => {
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "mt-1 text-[10px] opacity-70 flex items-center gap-2";
+        meta.innerHTML = `<span>${new Date(m.time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}</span>`;
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className =
+          "text-[10px] px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700";
+        copyBtn.textContent = "Sao chép";
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(m.content || "");
+          showToast("Đã sao chép");
+        };
+
+        meta.appendChild(copyBtn);
+        bubble.append(text, meta);
+        wrap.appendChild(bubble);
+        chatArea.appendChild(wrap);
+      }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.remove("hidden");
+        setTimeout(() => toast.classList.add("hidden"), 1200);
+      }
+
+      function loadCurrent() {
+        ensureSession();
+        chatArea.innerHTML = "";
+        const s = sessions.find((x) => x.id === currentId);
+        (s.messages || []).forEach(renderMessage);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }
+
+      function setTheme(dark) {
+        const root = document.documentElement;
+        dark ? root.classList.add("dark") : root.classList.remove("dark");
+        localStorage.setItem("hou_theme", dark ? "dark" : "light");
+      }
+
+      // ===== Interactions =====
+      function autoResize() {
+        inputBox.style.height = "auto";
+        inputBox.style.height = Math.min(inputBox.scrollHeight, 220) + "px";
+      }
+
+      inputBox.addEventListener("input", autoResize);
+      inputBox.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          send();
+        }
       });
-    }
 
-    function btn(label, onClick){
-      const b = document.createElement('button');
-      b.className = 'text-xs px-2 py-1 rounded-md border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700';
-      b.textContent = label; b.onclick = (e)=>{ e.stopPropagation(); onClick(); };
-      return b;
-    }
+      sendBtn.addEventListener("click", send);
+      newChatBtn.addEventListener("click", newChat);
+      newChatBtnTop.addEventListener("click", newChat);
+      clearAllBtn?.addEventListener("click", () => {
+        if (confirm("Xóa toàn bộ phiên và tin nhắn?")) {
+          sessions = [];
+          currentId = null;
+          persist();
+          loadCurrent();
+        }
+      });
+      exportBtn?.addEventListener("click", () => {
+        const blob = new Blob([JSON.stringify(sessions, null, 2)], {
+          type: "application/json",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "hou_sessions.json";
+        a.click();
+      });
 
-    function renderMessage(m){
-      const wrap = document.createElement('div');
-      wrap.className = `flex ${m.role==='user'?'justify-end':'justify-start'}`;
+      themeBtn.addEventListener("click", () => {
+        const next = !document.documentElement.classList.contains("dark");
+        setTheme(next);
+      });
 
-      const bubble = document.createElement('div');
-      bubble.className = `max-w-[85%] md:max-w-[70%] px-3 py-2 rounded-2xl text-sm leading-relaxed shadow-sm ${m.role==='user'?'bg-brand-600 text-white rounded-br-md':'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-md'}`;
-
-      const text = document.createElement('div');
-      text.textContent = m.content;
-
-      const meta = document.createElement('div');
-      meta.className = 'mt-1 text-[10px] opacity-70 flex items-center gap-2';
-      meta.innerHTML = `<span>${new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
-
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'text-[10px] px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700';
-      copyBtn.textContent = 'Sao chép';
-      copyBtn.onclick = ()=>{ navigator.clipboard.writeText(m.content); showToast('Đã sao chép'); };
-
-      meta.appendChild(copyBtn);
-      bubble.append(text, meta);
-      wrap.appendChild(bubble);
-      chatArea.appendChild(wrap);
-    }
-
-    function showToast(msg){
-      toast.textContent = msg; toast.classList.remove('hidden');
-      setTimeout(()=> toast.classList.add('hidden'), 1200);
-    }
-
-    function loadCurrent(){
-      ensureSession();
-      chatArea.innerHTML = '';
-      const s = sessions.find(x=>x.id===currentId);
-      (s.messages||[]).forEach(renderMessage);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
-
-    function setTheme(dark){
-      const root = document.documentElement;
-      dark ? root.classList.add('dark') : root.classList.remove('dark');
-      localStorage.setItem('hou_theme', dark?'dark':'light');
-    }
-
-    // ===== Interactions =====
-    function autoResize(){
-      inputBox.style.height = 'auto';
-      inputBox.style.height = Math.min(inputBox.scrollHeight, 220) + 'px';
-    }
-
-    inputBox.addEventListener('input', autoResize);
-    inputBox.addEventListener('keydown', (e)=>{
-      if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); }
-    });
-
-    sendBtn.addEventListener('click', send);
-    newChatBtn.addEventListener('click', newChat);
-    newChatBtnTop.addEventListener('click', newChat);
-    clearAllBtn?.addEventListener('click', ()=>{
-      if(confirm('Xóa toàn bộ phiên và tin nhắn?')){ sessions=[]; currentId=null; persist(); loadCurrent(); }
-    });
-    exportBtn?.addEventListener('click', ()=>{
-      const blob = new Blob([JSON.stringify(sessions,null,2)], {type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hou_sessions.json'; a.click();
-    });
-
-    themeBtn.addEventListener('click', ()=>{
-      const next = !(document.documentElement.classList.contains('dark'));
-      setTheme(next);
-    });
-
-    function newChat(){
-      const s = {id: uid(), title: 'Cuộc trò chuyện mới', messages: []};
-      sessions.unshift(s); currentId = s.id; persist(); loadCurrent();
-      inputBox.focus();
-    }
-
-    async function send(){
-      const content = inputBox.value.trim();
-      if(!content) return;
-      inputBox.value = ''; autoResize(); inputBox.focus();
-      sendBtn.disabled = true; statusText.textContent = 'Đang gửi…';
-
-      const s = sessions.find(x=>x.id===currentId); if(!s) return;
-      const userMsg = {role:'user', content, time: Date.now()};
-      s.messages.push(userMsg); renderMessage(userMsg); persist();
-
-      // typing indicator
-      const typing = document.createElement('div');
-      typing.className = 'flex justify-start';
-      typing.innerHTML = `<div class="max-w-[85%] md:max-w-[70%] px-3 py-2 rounded-2xl shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-bl-md"><div class="typing"><span></span><span></span><span></span></div></div>`;
-      chatArea.appendChild(typing); chatArea.scrollTop = chatArea.scrollHeight;
-
-      const t0 = performance.now();
-      try{
-        const resp = await fetch('/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query: content})});
-        const data = await resp.json().catch(()=>({answer:'Không có phản hồi.'}));
-        const t1 = performance.now();
-        latencyEl.textContent = `⏱ ${Math.round(t1 - t0)} ms`;
-
-        typing.remove();
-        const botMsg = {role:'assistant', content: data.answer || 'Không có phản hồi.', time: Date.now()};
-        // đặt tiêu đề phiên theo câu hỏi đầu
-        if ((s.title||'').trim()==='Cuộc trò chuyện mới' && s.messages.length<=1){ s.title = content.slice(0,40); }
-        s.messages.push(botMsg); renderMessage(botMsg); persist();
-      }catch(err){
-        typing.remove();
-        const botMsg = {role:'assistant', content: 'Có lỗi khi truy vấn. Vui lòng thử lại.', time: Date.now()};
-        s.messages.push(botMsg); renderMessage(botMsg); persist();
-        console.error(err);
-      }finally{
-        sendBtn.disabled = false; statusText.textContent = 'Sẵn sàng';
+      function newChat() {
+        const s = { id: uid(), title: "Cuộc trò chuyện mới", messages: [] };
+        sessions.unshift(s);
+        currentId = s.id;
+        persist();
+        loadCurrent();
+        inputBox.focus();
       }
-    }
 
-    // ===== Init =====
-    (function init(){
-      // theme
-      setTheme(localStorage.getItem('hou_theme')==='dark');
-      ensureSession(); renderSessions(); loadCurrent();
-      inputBox.focus(); autoResize();
-    })();
-  </script>
-</body>
+      async function send() {
+        const content = inputBox.value.trim();
+        if (!content) return;
+        inputBox.value = "";
+        autoResize();
+        inputBox.focus();
+        sendBtn.disabled = true;
+        statusText.textContent = "Đang gửi…";
+
+        const s = sessions.find((x) => x.id === currentId);
+        if (!s) return;
+        const userMsg = { role: "user", content, time: Date.now() };
+        s.messages.push(userMsg);
+        renderMessage(userMsg);
+        persist();
+
+        // typing indicator
+        const typing = document.createElement("div");
+        typing.className = "flex justify-start";
+        typing.innerHTML = `<div class="max-w-[85%] md:max-w-[70%] px-3 py-2 rounded-2xl shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-bl-md">
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>`;
+        chatArea.appendChild(typing);
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        const t0 = performance.now();
+        try {
+          const resp = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: content, thread_id: currentId }), // thread_id để tách luồng bộ nhớ
+          });
+          const data = await resp
+            .json()
+            .catch(() => ({ answer: "Không có phản hồi." }));
+          const t1 = performance.now();
+          latencyEl.textContent = `⏱ ${Math.round(t1 - t0)} ms`;
+
+          typing.remove();
+          const botMsg = {
+            role: "assistant",
+            content: data.answer || "Không có phản hồi.",
+            time: Date.now(),
+          };
+          if (
+            (s.title || "").trim() === "Cuộc trò chuyện mới" &&
+            s.messages.length <= 1
+          ) {
+            s.title = content.slice(0, 40);
+          }
+          s.messages.push(botMsg);
+          renderMessage(botMsg);
+          persist();
+        } catch (err) {
+          typing.remove();
+          const botMsg = {
+            role: "assistant",
+            content: "Có lỗi khi truy vấn. Vui lòng thử lại.",
+            time: Date.now(),
+          };
+          s.messages.push(botMsg);
+          renderMessage(botMsg);
+          persist();
+          console.error(err);
+        } finally {
+          sendBtn.disabled = false;
+          statusText.textContent = "Sẵn sàng";
+        }
+      }
+
+      // ===== Init =====
+      (function init() {
+        setTheme(localStorage.getItem("hou_theme") === "dark");
+        ensureSession();
+        renderSessions();
+        loadCurrent();
+        inputBox.focus();
+        autoResize();
+      })();
+    </script>
+  </body>
 </html>
