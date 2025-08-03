@@ -19,7 +19,7 @@ os.environ.setdefault("GOOGLE_API_KEY", "AIzaSyDR1eVkKtTN3RBeXNdW3bThRIwMMMfJND8
 # === Load FAISS ===
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 base_dir = os.path.dirname(os.path.abspath(__file__))
-index_path = os.path.join(base_dir, "..", "hou_crawler", "crawler", "data", "hou_index")
+index_path = os.path.join(base_dir, "..", "data", "hou", "hou_index")
 
 vectordb = FAISS.load_local(
     index_path,
@@ -50,8 +50,11 @@ chat_main = ChatPromptTemplate.from_messages([
         "4) Chia đoạn ngắn; không viết thành một khối dài.\n"
         "Ưu tiên chính xác, logic, dễ hiểu luôn hoàn thành câu trọn vẹn.",
     ),
-    ("system", "Tài liệu (context):\n{context}"),
     MessagesPlaceholder(variable_name="messages"),
+    ("user",
+     "Dựa trên TÀI LIỆU dưới đây, hãy trả lời câu hỏi.\n\n"
+     "TÀI LIỆU:\n{context}\n\n"
+     "CÂU HỎI: {question}\n\nTrả lời:")
 ])
 answer_chain = chat_main | llm
 
@@ -148,7 +151,7 @@ def retrieve_with_mmr(query: str, section_value: str) -> List[Document]:
 # === Node 1: phân loại + rút ra query từ messages ===
 
 def classify_section(state: State) -> State:
-    query = last_user_text(state["messages"]) or ""
+    query = (state.get("query") or last_user_text(state.get("messages", [])) or "").strip()
     section = section_chain.invoke({"query": query}).content.strip().lower()
     if section not in [
         "giới thiệu",
@@ -162,7 +165,7 @@ def classify_section(state: State) -> State:
     ]:
         section = "khác"
     print(f"📎 Gemini xác định section: {section}")
-    return {**state, "query": query, "section": section}
+    return {**state, "section": section}
 
 # === Node 2: retrieve ===
 
@@ -217,7 +220,7 @@ def generate_answer(state: State) -> State:
 
     try:
         # [SỬA] Truyền cả history
-        resp = answer_chain.invoke({"context": docs_text, "messages": state["messages"]})
+        resp = answer_chain.invoke({"context": docs_text, "messages": state["messages"],"question": state["query"],})
         content = (resp.content or "").strip() or "Không có thông tin phù hợp hoặc lỗi từ Gemini."
         return {**state, "messages": [AIMessage(content=content)], "answer": content}
     except Exception:
@@ -238,9 +241,10 @@ graph.add_node("classify", classify_section)
 graph.add_node("retrieve", retrieve_docs)
 graph.add_node("answer", generate_answer)
 
-graph.set_entry_point("classify")
+graph.set_entry_point("add_user_message")
+graph.add_edge("add_user_message", "classify")
 graph.add_edge("classify", "retrieve")
-graph.add_edge("retrieve", "answer")
+graph.add_edge("retrieve", "answer")``
 graph.set_finish_point("answer")
 
 # BẬT BỘ NHỚ: mỗi thread_id sẽ có lịch sử messages riêng
