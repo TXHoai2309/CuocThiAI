@@ -253,6 +253,7 @@ def load_documents(json_path: str) -> Tuple[List[Document], Dict[str, int]]:
     docs: List[Document] = []
     stats = {"course_like": 0, "program_desc_like": 0}
     _walk(payload, stack=[], collected=docs, stats=stats)
+    # 
 
     # Khử trùng lặp
     seen = set()
@@ -266,6 +267,8 @@ def load_documents(json_path: str) -> Tuple[List[Document], Dict[str, int]]:
         )
         if key in seen:
             continue
+        # Chỉ giữ lại khóa chính và tên ngành/bậc/khoa/năm
+        
         seen.add(key)
         uniq_docs.append(d)
 
