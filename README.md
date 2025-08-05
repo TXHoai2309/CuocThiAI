@@ -77,7 +77,7 @@ Chatbot được tích hợp các công nghệ **Xử lý ngôn ngữ tự nhiê
 │
 ├── requirements.txt                   # Danh sách thư viện Python cần cài
 ├── README.md                          # Tài liệu mô tả project
-└── video_demo.mp4                     # Demo sử dụng chatbot
+
 
 ```
 ## 🔧 Cài đặt
@@ -113,8 +113,7 @@ Chatbot được tích hợp các công nghệ **Xử lý ngôn ngữ tự nhiê
 - [FAISS Documentation](https://faiss.ai/)
 - [Google Generative AI](https://developers.generativeai.google/)
 - [TailwindCSS Documentation](https://tailwindcss.com/docs)
-- [BeautifulSoup Documentation](https://www.crummy.com/software/BeautifulSoup/bs4
-/doc/)
+- [BeautifulSoup Documentation](https://www.crummy.com/software/BeautifulSoup/bs4)
 - [Selenium Documentation](https://www.selenium.dev/documentation/webdriver/)
 
 ## 👤 Tác giả
