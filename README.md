@@ -97,12 +97,11 @@ Chatbot được tích hợp các công nghệ **Xử lý ngôn ngữ tự nhiê
 
 5. **Tương tác với chatbot**: Nhập câu hỏi và nhận câu trả lời từ chatbot.
 
----
+
 
 ## 📷 Giao diện demo
-![Demo Chatbot](demo_giao_dien.png)
+![Demo Chatbot](demo_giao_dien.jpg)
 
----
 
 ## 📚 Tài liệu tham khảo
 
