@@ -18,12 +18,10 @@ from langgraph.checkpoint.memory import MemorySaver
 os.environ.setdefault("GOOGLE_API_KEY", "AIzaSyDR1eVkKtTN3RBeXNdW3bThRIwMMMfJND8")
 
 # === Load FAISS ===
-# [GIỮ] HOU + Điểm dùng all-MiniLM-L6-v2
+
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# [NEW] CTĐT dùng đúng model lúc build: paraphrase-multilingual-MiniLM-L12-v2
-# Lý do: không gian embedding phải trùng với lúc indexing nếu không độ chính xác giảm mạnh.
 embedding_model_ctdt = HuggingFaceEmbeddings(
     model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 )
@@ -32,7 +30,6 @@ embedding_model_ctdt = HuggingFaceEmbeddings(
 hou_index_path = os.path.join(base_dir, "..", "data", "hou", "hou_index")
 diem_index_path = os.path.join(base_dir, "..", "data", "hou", "diem_chuan_index")
 
-# [CHANGE] CTĐT: ưu tiên path "./data/hou/ctdt_index", nếu không tồn tại thì fallback "./data/ctdt_index"
 ctdt_index_path = os.path.join(base_dir, "..", "data", "hou", "ctdt_index")
 if not os.path.exists(ctdt_index_path):  # [NEW] fallback path
     ctdt_index_path = os.path.join(base_dir, "..", "data", "ctdt_index")
@@ -104,10 +101,8 @@ chat_section = ChatPromptTemplate.from_messages([
 ])
 section_chain = chat_section | llm
 
-# === Heuristics: regex năm để ưu tiên tài liệu chứa năm ===
 YEAR_RE = re.compile(r"(20\d{2})")
 
-# ===================== Router & Từ khóa =====================
 
 # [NEW] Chuẩn hóa tiếng Việt: lowercase + bỏ dấu + thay '_' thành ' ' + gọn khoảng trắng
 def vn_normalize(s: str) -> str:
@@ -145,18 +140,17 @@ HOU_KEYWORDS_RAW = [
     "quy chế", "lịch học", "lịch thi", "lịch nghỉ", "hoạt động ngoại khóa", "câu lạc bộ",
 ]
 
-# [NEW] Phủ định: nếu thấy từ khóa này thì không route sang nhóm tương ứng
+
 NEGATE_FOR_CTDT = ["diem chuan", "diem san", "to hop", "ma nganh"]
 NEGATE_FOR_DIEM = ["tin chi", "hoc phan", "syllabus", "clo", "plo"]
 
-# [NEW] Chuẩn hóa keyword set (không dấu)
 CTDT_KEYWORDS = {vn_normalize(x) for x in CTDT_KEYWORDS_RAW}
 DIEM_KEYWORDS = {vn_normalize(x) for x in DIEM_KEYWORDS_RAW}
 HOU_KEYWORDS = {vn_normalize(x) for x in HOU_KEYWORDS_RAW}
 NEGATE_FOR_CTDT = {vn_normalize(x) for x in NEGATE_FOR_CTDT}
 NEGATE_FOR_DIEM = {vn_normalize(x) for x in NEGATE_FOR_DIEM}
 
-# === Khai báo STATE có bộ nhớ tin nhắn ===
+
 class State(TypedDict):
     query: str
     section: str
@@ -256,7 +250,6 @@ def retrieve_with_mmr(query: str, section_value: str) -> List[Document]:
                 k=100,
                 fetch_k=100,
                 lambda_mult=0.5,
-                # [FIX] Không truyền filter callable vì FAISS community không hỗ trợ
             )
         except Exception:
             docs = []

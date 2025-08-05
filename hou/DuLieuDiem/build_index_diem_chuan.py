@@ -6,16 +6,13 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 
-# ====== CẤU HÌNH ĐƯỜNG DẪN ======
-# Đường dẫn file JSON điểm chuẩn (đã upload)
+
 INPUT_FILE = r"D:\airdrop\CuocThiAI\hou_crawler\crawler\data\DuLieuDiem\diem_chuan_MHN_2024_tuyensinh247.json"
 
-# Thư mục lưu FAISS index (đặt cạnh file hiện tại -> ./data/diem_chuan_index)
 OUTPUT_INDEX_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "data", "diem_chuan_index")
 )
 
-# ====== HÀM TIỆN ÍCH ======
 def _safe_str(x):
     return "" if x is None else str(x)
 
@@ -37,7 +34,7 @@ def _normalize_method(m: str) -> str:
         return "điểm đánh giá tư duy"
     return m_lower
 
-# ====== LOAD & CHUYỂN ĐỔI JSON -> Document ======
+
 def load_documents(json_path: str) -> List[Document]:
     """
     Kỳ vọng cấu trúc:

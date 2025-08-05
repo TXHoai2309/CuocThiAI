@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 """
 Build FAISS index cho Chuongtrinhhoc.json theo phong cách:
 LangChain + FAISS + HuggingFaceEmbeddings
@@ -24,8 +23,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 
-
-# ================== CLI ==================
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser("Build FAISS index cho Chuongtrinhhoc.json (LangChain)")
     p.add_argument("--input", default=r"D:\airdrop\CuocThiAI\HOU\ChuongTrinhHoc\Chuongtrinhhoc.json", help="Đường dẫn JSON đầu vào")
@@ -36,8 +33,6 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--chunk_overlap", type=int, default=120)
     return p.parse_args()
 
-
-# ================== tiện ích chuẩn hoá ==================
 def _safe_str(x: Any) -> str:
     return "" if x is None else str(x)
 
@@ -54,7 +49,6 @@ def _lower_keys(d: Dict[str, Any]) -> Dict[str, Any]:
     return {str(k).lower(): v for k, v in d.items()}
 
 
-# ================== bộ khóa nhận diện ==================
 MAJOR_KEYS = {
     "ngành", "nganh", "tennganh", "tên ngành", "program", "program_name",
     "chuongtrinh", "chương trình",
@@ -131,7 +125,6 @@ def _extract_context(obj_stack: List[Dict[str, Any]]) -> Dict[str, Any]:
     return ctx
 
 
-# ================== duyệt JSON → Documents ==================
 def _walk(
     data: Any,
     stack: List[Dict[str, Any]],
@@ -267,7 +260,7 @@ def load_documents(json_path: str) -> Tuple[List[Document], Dict[str, int]]:
         )
         if key in seen:
             continue
-        # Chỉ giữ lại khóa chính và tên ngành/bậc/khoa/năm
+
         
         seen.add(key)
         uniq_docs.append(d)
@@ -275,7 +268,6 @@ def load_documents(json_path: str) -> Tuple[List[Document], Dict[str, int]]:
     return uniq_docs, stats
 
 
-# ================== main pipeline ==================
 def main():
     args = parse_args()
     input_file = args.input

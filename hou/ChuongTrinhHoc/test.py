@@ -1,7 +1,7 @@
 import json, re
 from collections import Counter
 
-# Đổi path tới file thật của bạn
+
 PATH = r"D:\airdrop\CuocThiAI\HOU\ChuongTrinhHoc\Chuongtrinhhoc.json"
 
 COURSE_NAME_KEYS = {"ten_hp","tenhocphan","tên học phần","ten mon","ten_mon","course_name","hocphan","tên","học phần","mon_hoc","môn học","tenmon"}

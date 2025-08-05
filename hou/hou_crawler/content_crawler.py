@@ -18,7 +18,7 @@ def log(msg: str):
     print(f"{LOG_IDX}. {msg}")
     LOG_IDX += 1
 
-# ================== Tiện ích URL & bộ lọc ==================
+
 
 def canon(url: str, keep_query: bool = True) -> str:
     """
@@ -102,7 +102,7 @@ def is_crawlable(url: str) -> bool:
         return False
     return True
 
-# ================== Xử lý nội dung ==================
+
 
 def clean_html_text(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
@@ -247,7 +247,7 @@ def crawl_tree(url: str, category_name: str, parent_path, depth=0):
     except Exception as e:
         log(f"{indent}❌ Lỗi khi duyệt menu: {cu} | {e}")
 
-# ================== main ==================
+
 
 def main():
     INPUT = "../data/menu_links.json"

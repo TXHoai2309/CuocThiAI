@@ -18,7 +18,7 @@ OUTPUT_FILE = os.path.join(BASE_DIR, "data", "menu_contents_refined.json")
 
 EXCLUDE_DOMAINS = ["jshou.edu.vn", "thuvien.hou.edu.vn", "sinhvien.hou.edu.vn"]
 
-# ==== Selenium Chrome cấu hình headless ====
+
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--no-sandbox')

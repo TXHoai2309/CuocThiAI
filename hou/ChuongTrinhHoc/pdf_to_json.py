@@ -11,7 +11,7 @@ import pdfplumber
 import pytesseract
 from PIL import Image
 
-# ====================== NHẬN DẠNG SECTION ======================
+
 SECTION_PATTERNS = [
     r"^(A|B|C)\.\s+",
     r"^(I|II|III|IV|V|VI|VII|VIII|IX|X)\.\s+",
@@ -22,7 +22,6 @@ SECTION_PATTERNS = [
 ]
 SECTION_REGEX = re.compile("|".join(SECTION_PATTERNS), flags=re.IGNORECASE)
 
-# ====================== TIỆN ÍCH ======================
 def ensure_tesseract(cmd_hint: Optional[str] = None) -> Optional[str]:
     """
     Tìm tesseract.exe theo thứ tự: đối số chỉ định, vị trí phổ biến, PATH hệ thống.
@@ -105,7 +104,7 @@ def ocr_page(page, pageno: int, langs=("vie+eng", "vie", "eng"),
 
 def extract_text_with_fallback(page, pageno: int, use_ocr: bool, lang: str,
                              verbose: bool = True, dump_dir: Optional[str] = None) -> str:
-    # 1) Thử lấy layer text
+
     try:
         txt = page.extract_text() or ""
         if txt.strip():
@@ -115,7 +114,7 @@ def extract_text_with_fallback(page, pageno: int, use_ocr: bool, lang: str,
     except Exception:
         pass
 
-    # 2) OCR nếu bật
+
     if not use_ocr:
         if verbose:
             print(f"[SKIP OCR] Trang {pageno} không có layer text.")
@@ -136,7 +135,7 @@ def extract_text_with_fallback(page, pageno: int, use_ocr: bool, lang: str,
         print(f"[OCR] Trang {pageno}: {len(txt)} ký tự sau OCR")
     return txt
 
-# ====================== CORE ======================
+
 def pdf_to_structured(pdf_path: str, ocr_lang: str = "vie+eng",
                       verbose: bool = True, use_ocr: bool = True,
                       tesseract_cmd: Optional[str] = None,
@@ -265,9 +264,8 @@ def find_and_replace_file_data(data_list: list, new_data: Dict):
     data_list.append(new_data)
     return False
 
-# ====================== CLI ======================
 def main():
-    # === ĐỔI 2 ĐƯỜNG DẪN NÀY THEO MÁY BẠN NẾU CHẠY BẰNG TAY ===
+
     DEFAULT_PDF = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\TCNH.pdf"
     DEFAULT_OUT = r"D:\bai_tap_lon_cac_mon\CuocThiAI\hou_crawler\crawler\data\ChuongTrinhHoc\Chuongtrinhhoc.json"
 
