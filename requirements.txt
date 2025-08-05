@@ -1,0 +1,27 @@
+# Web và API
+Flask==2.3.3
+
+# Xử lý ngôn ngữ tự nhiên
+langchain==0.1.16
+langgraph==0.0.34
+langchain-community==0.0.30
+langchain-core==0.1.42
+langchain-google-genai==0.0.8
+
+# Embedding & truy vấn ngữ nghĩa
+sentence-transformers==2.5.1
+faiss-cpu==1.7.4
+
+# Mô hình nhúng từ HuggingFace
+transformers==4.41.2
+huggingface-hub==0.23.3
+
+# Truy cập API Gemini (Google Generative AI)
+google-generativeai==0.5.4
+
+# Web scraping
+beautifulsoup4==4.12.3
+selenium==4.21.0
+requests==2.31.0
+
+
